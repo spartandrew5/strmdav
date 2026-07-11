@@ -150,26 +150,36 @@ public class AddUrlController(
 
     private async Task<RemoteMediaInfo> ProbeRemoteMediaAsync(Uri url, AddUrlRequest request)
     {
-        var fileName = GetFileName(url, request.FileNameHint);
-        var contentLength = await GetContentLengthAsync(url, request).ConfigureAwait(false);
-        return new RemoteMediaInfo(fileName, contentLength);
+        var metadata = await GetRemoteMetadataAsync(url, request).ConfigureAwait(false);
+        var fileName = GetFileName(url, request.FileNameHint, metadata.ResponseFileName, metadata.ContentType);
+        return new RemoteMediaInfo(fileName, metadata.ContentLength);
     }
 
-    private static string GetFileName(Uri url, string? hint)
+    private static string GetFileName(Uri url, string? hint, string? responseFileName, string? contentType)
     {
-        var name = string.IsNullOrWhiteSpace(hint)
-            ? Path.GetFileName(url.AbsolutePath)
-            : hint;
+        var name = StringUtil.EmptyToNull(hint)
+            ?? StringUtil.EmptyToNull(responseFileName)
+            ?? Path.GetFileName(url.AbsolutePath);
 
         name = Uri.UnescapeDataString(name ?? string.Empty);
         name = Path.GetFileName(name);
         if (string.IsNullOrWhiteSpace(name))
             name = $"direct-link-{Guid.NewGuid():N}.mp4";
 
+        var ext = Path.GetExtension(name);
+        if (string.IsNullOrWhiteSpace(ext))
+        {
+            var inferredExt = GetExtensionFromContentType(contentType);
+            if (!string.IsNullOrWhiteSpace(inferredExt))
+            {
+                name = $"{name}{inferredExt}";
+            }
+        }
+
         return name;
     }
 
-    private async Task<long> GetContentLengthAsync(Uri url, AddUrlRequest request)
+    private async Task<RemoteMetadata> GetRemoteMetadataAsync(Uri url, AddUrlRequest request)
     {
         using var head = new HttpRequestMessage(HttpMethod.Head, url);
         ApplyHeaders(head, request);
@@ -177,7 +187,14 @@ public class AddUrlController(
             .ConfigureAwait(false);
 
         if (headResponse.IsSuccessStatusCode && headResponse.Content.Headers.ContentLength is long headLength && headLength > 0)
-            return headLength;
+        {
+            return new RemoteMetadata
+            {
+                ContentLength = headLength,
+                ContentType = headResponse.Content.Headers.ContentType?.MediaType,
+                ResponseFileName = GetResponseFileName(headResponse)
+            };
+        }
 
         using var get = new HttpRequestMessage(HttpMethod.Get, url);
         ApplyHeaders(get, request);
@@ -188,13 +205,45 @@ public class AddUrlController(
         if (getResponse.StatusCode != HttpStatusCode.PartialContent && !getResponse.IsSuccessStatusCode)
             throw new BadHttpRequestException($"Failed to probe media URL. Status code: {(int)getResponse.StatusCode}.");
 
-        if (getResponse.Content.Headers.ContentRange?.Length is long rangeLength && rangeLength > 0)
-            return rangeLength;
+        var length =
+            getResponse.Content.Headers.ContentRange?.Length
+            ?? getResponse.Content.Headers.ContentLength
+            ?? 0;
 
-        if (getResponse.Content.Headers.ContentLength is long contentLength && contentLength > 0)
-            return contentLength;
+        if (length > 0)
+        {
+            return new RemoteMetadata
+            {
+                ContentLength = length,
+                ContentType = getResponse.Content.Headers.ContentType?.MediaType,
+                ResponseFileName = GetResponseFileName(getResponse)
+            };
+        }
 
         throw new BadHttpRequestException("Could not determine remote file size. Content-Length is required.");
+    }
+
+    private static string? GetResponseFileName(HttpResponseMessage response)
+    {
+        var disposition = response.Content.Headers.ContentDisposition;
+        var fileName = disposition?.FileNameStar ?? disposition?.FileName;
+        if (string.IsNullOrWhiteSpace(fileName)) return null;
+        return fileName.Trim('"');
+    }
+
+    private static string? GetExtensionFromContentType(string? contentType)
+    {
+        return contentType?.ToLowerInvariant() switch
+        {
+            "video/mp4" => ".mp4",
+            "video/x-matroska" => ".mkv",
+            "video/webm" => ".webm",
+            "video/quicktime" => ".mov",
+            "video/x-msvideo" => ".avi",
+            "video/x-ms-wmv" => ".wmv",
+            "video/mpeg" => ".mpeg",
+            _ => null,
+        };
     }
 
     private static void ApplyHeaders(HttpRequestMessage requestMessage, AddUrlRequest request)
@@ -211,6 +260,13 @@ public class AddUrlController(
 
         foreach (var (key, value) in request.Headers)
             requestMessage.Headers.TryAddWithoutValidation(key, value);
+    }
+
+    private class RemoteMetadata
+    {
+        public long ContentLength { get; init; }
+        public string? ContentType { get; init; }
+        public string? ResponseFileName { get; init; }
     }
 
     private record RemoteMediaInfo(string FileName, long FileSize);
