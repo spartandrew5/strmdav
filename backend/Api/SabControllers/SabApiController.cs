@@ -88,7 +88,7 @@ public class SabApiController(
                     HttpContext, dbClient, queueManager, configManager, websocketManager);
             case "addurl":
                 return new AddUrlController(
-                    HttpContext, dbClient, queueManager, configManager, websocketManager);
+                    HttpContext, dbClient, configManager, websocketManager);
 
             case "queue" when HttpContext.GetRequestParam("name") == "delete":
                 return new RemoveFromQueueController(

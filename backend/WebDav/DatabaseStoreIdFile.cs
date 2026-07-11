@@ -36,6 +36,8 @@ public class DatabaseStoreIdFile(
                 new DatabaseStoreRarFile(davItem, httpContext, dbClient, usenetClient, configManager),
             DavItem.ItemSubType.MultipartFile =>
                 new DatabaseStoreMultipartFile(davItem, httpContext, dbClient, usenetClient, configManager),
+            DavItem.ItemSubType.DirectLinkFile =>
+                new DatabaseStoreDirectLinkFile(davItem, httpContext, dbClient),
             _ => throw new ArgumentException("Unrecognized id child type.")
         };
     }

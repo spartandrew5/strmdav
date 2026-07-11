@@ -117,6 +117,13 @@ public sealed class DavDatabaseClient(DavDatabaseContext ctx)
             .ConfigureAwait(false);
     }
 
+    public async Task<DirectLinkBlob?> GetDirectLinkBlobAsync(DavItem davItem, CancellationToken ct = default)
+    {
+        var blobId = davItem.FileBlobId;
+        if (!blobId.HasValue) return null;
+        return await BlobStore.ReadBlob<DirectLinkBlob>(blobId.Value).ConfigureAwait(false);
+    }
+
     // queue
     public async Task<(QueueItem? queueItem, Stream? queueNzbStream)> GetTopQueueItem
     (

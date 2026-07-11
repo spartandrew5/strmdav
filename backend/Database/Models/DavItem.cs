@@ -82,6 +82,7 @@ public class DavItem
         NzbFile = 201,
         RarFile = 202,
         MultipartFile = 203,
+        DirectLinkFile = 204,
     }
 
     // static instances

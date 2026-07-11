@@ -145,6 +145,9 @@ public class DatabaseStoreCollection(
             DavItem.ItemSubType.MultipartFile =>
                 new DatabaseStoreMultipartFile(
                     davItem, httpContext, dbClient, usenetClient, configManager),
+            DavItem.ItemSubType.DirectLinkFile =>
+                new DatabaseStoreDirectLinkFile(
+                    davItem, httpContext, dbClient),
             _ => throw new ArgumentException("Unrecognized directory child type.")
         };
     }

@@ -28,79 +28,8 @@ public class AddFileController(
 
     public async Task<AddFileResponse> AddFileAsync(AddFileRequest request)
     {
-        var id = Guid.NewGuid();
-
-        // write the file to the blob-store
-        await using var stream = request.NzbFileStream;
-        await BlobStore.WriteBlob(id, stream);
-
-        // save the queue item to the database
-        QueueItem? queueItem;
-        try
-        {
-            // backup the nzb file if enabled
-            if (configManager.IsNzbBackupEnabled())
-            {
-                var backupLocation = configManager.GetNzbBackupLocation();
-                if (backupLocation != null)
-                {
-                    await BackupNzbAsync(id, request.FileName, request.Category, backupLocation);
-                }
-            }
-
-            // compute the total segment bytes
-            await using var nzbFileStream = BlobStore.ReadBlob(id);
-            var totalSegmentBytes = ComputeTotalSegmentBytes(nzbFileStream);
-
-            // create the queue item record
-            queueItem = new QueueItem
-            {
-                Id = id,
-                CreatedAt = DateTime.Now,
-                FileName = request.FileName,
-                JobName = FilenameUtil.GetJobName(request.FileName),
-                NzbFileSize = nzbFileStream.Length,
-                TotalSegmentBytes = totalSegmentBytes,
-                Category = request.Category,
-                Priority = request.Priority,
-                PostProcessing = request.PostProcessing,
-                PauseUntil = request.PauseUntil
-            };
-
-            // record the original NZB filename so it can be served at download time
-            var nzbName = new NzbName
-            {
-                Id = id,
-                FileName = request.FileName
-            };
-
-            // save
-            dbClient.Ctx.QueueItems.Add(queueItem);
-            dbClient.Ctx.NzbNames.Add(nzbName);
-            await dbClient.Ctx.SaveChangesAsync(request.CancellationToken).ConfigureAwait(false);
-            _ = DavDatabaseContext.RcloneVfsForget(["/nzbs"]);
-        }
-        catch
-        {
-            // in case of any errors writing to the database
-            // delete the nzb file blob
-            BlobStore.Delete(id);
-            throw;
-        }
-
-        // inform the frontend that a new item was added to the queue
-        var message = GetQueueResponse.QueueSlot.FromQueueItem(queueItem).ToJson();
-        _ = websocketManager.SendMessage(WebsocketTopic.QueueItemAdded, message);
-
-        // awaken the queue if it is sleeping
-        queueManager.AwakenQueue(request.PauseUntil);
-
-        // return response
-        return new AddFileResponse()
-        {
-            Status = true,
-            NzoIds = [queueItem.Id.ToString()],
-        };
+        await Task.CompletedTask;
+        throw new BadHttpRequestException("NZB file uploads are disabled. Use mode=addurl with a direct media URL.");
     }
 
     protected override async Task<IActionResult> Handle()
