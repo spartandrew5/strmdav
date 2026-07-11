@@ -7,7 +7,7 @@ import { WebSocketServer } from "ws";
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = "../build/server/index.js";
 const DEVELOPMENT = process.env.NODE_ENV === "development";
-const PORT = Number.parseInt(process.env.PORT || "3000");
+const PORT = Number.parseInt(process.env.PORT || "3001");
 
 // Initialize the express app
 const app = express();

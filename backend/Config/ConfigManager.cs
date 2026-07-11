@@ -236,7 +236,7 @@ public class ConfigManager
 
     public string GetBaseUrl()
     {
-        return GetConfigValue("general.base-url") ?? "http://localhost:3000";
+        return GetConfigValue("general.base-url") ?? "http://localhost:3001";
     }
 
     public bool IsRcloneRemoteControlEnabled()

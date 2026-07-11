@@ -48,7 +48,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set env variables
-EXPOSE 3000
+EXPOSE 3001
 ARG NZBDAV_VERSION
 ENV NZBDAV_VERSION=${NZBDAV_VERSION}
 ENV NODE_ENV=production
