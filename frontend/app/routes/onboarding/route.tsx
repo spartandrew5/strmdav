@@ -51,7 +51,7 @@ export default function Index({ loaderData, actionData }: Route.ComponentProps) 
         <>
             <Form className={styles["container"]} method="POST">
                 <img className={styles["logo"]} src="/logo.svg"></img>
-                <div className={styles["title"]}>Nzb DAV</div>
+                <div className={styles["title"]}>StrmDAV</div>
                 {pageData.error &&
                     <Alert className={styles["alert"]} variant="danger">
                         {pageData.error}

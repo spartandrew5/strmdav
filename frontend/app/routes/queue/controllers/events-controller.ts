@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { HistorySlot, QueueSlot } from "~/clients/backend-client.server";
-import type { PresentationHistorySlot, PresentationQueueSlot, UploadingFile } from "../route";
+import type { PresentationHistorySlot, PresentationQueueSlot } from "../route";
 
 export type QueueEvents = {
     onAddQueueSlot: (queueSlot: QueueSlot) => void,
@@ -19,18 +19,13 @@ export type HistoryEvents = {
 };
 
 export function useQueueEvents(
-    setUploadingFiles: (value: React.SetStateAction<UploadingFile[]>) => void,
     setQueueSlots: (value: React.SetStateAction<PresentationQueueSlot[]>) => void,
-    uploadQueueRef: React.RefObject<UploadingFile[]>
 ) {
     const onAddQueueSlot = useCallback((queueSlot: QueueSlot) => {
-        uploadQueueRef.current = uploadQueueRef.current.filter(x => x.queueSlot.status === "uploading" || x.queueSlot.filename !== queueSlot.filename);
-        setUploadingFiles(files => files.filter(f => f.queueSlot.filename !== queueSlot.filename));
         setQueueSlots(slots => [...slots, queueSlot]);
     }, [setQueueSlots]);
 
     const onSelectQueueSlots = useCallback((ids: Set<string>, isSelected: boolean) => {
-        setUploadingFiles(files => files.map(x => ids.has(x.queueSlot.nzo_id) ? { ...x, queueSlot: { ...x.queueSlot, isSelected } } : x));
         setQueueSlots(slots => slots.map(x => ids.has(x.nzo_id) ? { ...x, isSelected } : x));
     }, [setQueueSlots]);
 
@@ -39,8 +34,6 @@ export function useQueueEvents(
     }, [setQueueSlots]);
 
     const onRemoveQueueSlots = useCallback((ids: Set<string>) => {
-        uploadQueueRef.current = uploadQueueRef.current.filter(x => x.queueSlot.status === "uploading" || !ids.has(x.queueSlot.nzo_id));
-        setUploadingFiles(files => files.filter(x => x.queueSlot.status === "uploading" || !ids.has(x.queueSlot.nzo_id)));
         setQueueSlots(slots => slots.filter(x => !ids.has(x.nzo_id)));
     }, [setQueueSlots]);
 

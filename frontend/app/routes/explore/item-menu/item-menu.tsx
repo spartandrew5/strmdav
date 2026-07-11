@@ -48,7 +48,7 @@ export function Download(): ReactNode {
 
 export function ExportNzb(): ReactNode {
     return (
-        <><ExportIcon /> Export NZB</>
+        <><ExportIcon /> Export Source</>
     );
 }
 

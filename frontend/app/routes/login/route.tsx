@@ -32,7 +32,7 @@ export default function Index({ loaderData, actionData }: Route.ComponentProps) 
     return (
         <Form className={styles["container"]} method="POST">
             <img className={styles["logo"]} src="/logo.svg"></img>
-            <div className={styles["title"]}>Nzb DAV</div>
+            <div className={styles["title"]}>StrmDAV</div>
             <Alert className={styles["error"]} show={showError} variant="danger">{pageData.loginError}</Alert>
             <BootstrapForm.Control name="username" type="text" placeholder="Username" autoFocus />
             <BootstrapForm.Control name="password" type="password" placeholder="Password" />

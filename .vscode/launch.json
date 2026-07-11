@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "StrmDAV: local container test",
+      "type": "pwa-msedge",
+      "request": "launch",
+      "url": "http://localhost:3001",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "strmdav: start local test container",
+      "postDebugTask": "strmdav: stop local test container"
+    }
+  ]
+}

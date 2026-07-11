@@ -11,6 +11,56 @@
     margin-bottom: 50px;
 }
 
+.submissionCard {
+    margin-bottom: 28px;
+    padding: 20px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(9, 28, 38, 0.9), rgba(7, 19, 28, 0.92));
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+}
+
+.submissionHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.submissionTitle {
+    color: hsl(180, 7%, 86%);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.submissionDescription {
+    color: hsl(180, 7%, 58%);
+    margin-top: 4px;
+    line-height: 1.5;
+}
+
+.submissionFields {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(220px, 1fr) auto;
+    gap: 12px;
+}
+
+.submissionAlert {
+    margin-bottom: 14px;
+}
+
+@media not (min-width: 900px) {
+    .submissionHeader {
+        flex-direction: column;
+    }
+
+    .submissionFields {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media not (min-width: 450px) {
     .queueContainer {
         min-height: 413.9px;
@@ -41,23 +91,4 @@
     .listItem {
         margin-top: 5px
     }
-}
-
-.dropzone {
-    position: relative;
-}
-
-.activeDropzone {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 123, 255, 0.1);
-    outline: 2px dashed #007bff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    border-radius: 4px;
 }

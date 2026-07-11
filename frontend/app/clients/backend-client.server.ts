@@ -93,10 +93,8 @@ class BackendClient {
         return data.history;
     }
 
-    public async addNzb(nzbFile: File): Promise<string> {
-        var config = await this.getConfig(["api.manual-category"]);
-        var category = config.find(item => item.configName === "api.manual-category")?.configValue || "uncategorized";
-        const url = process.env.BACKEND_URL + `/api?mode=addfile&cat=${category}&priority=0&pp=0`;
+    public async addDirectUrl(directUrl: string, category: string, filenameHint?: string): Promise<string> {
+        const url = process.env.BACKEND_URL + `/api?mode=addurl&cat=${encodeURIComponent(category)}&priority=0&pp=0`;
 
         const apiKey = process.env.FRONTEND_BACKEND_API_KEY || "";
         const response = await fetch(url, {
@@ -104,17 +102,20 @@ class BackendClient {
             headers: { "x-api-key": apiKey },
             body: (() => {
                 const form = new FormData();
-                form.append("nzbFile", nzbFile, nzbFile.name);
+                form.append("name", directUrl);
+                if (filenameHint) {
+                    form.append("nzbname", filenameHint);
+                }
                 return form;
             })()
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to add nzb file: ${(await response.json()).error}`);
+            throw new Error(`Failed to add direct URL: ${(await response.json()).error}`);
         }
         const data = await response.json();
         if (!data.nzo_ids || data.nzo_ids.length != 1) {
-            throw new Error(`Failed to add nzb file: unexpected response format`);
+            throw new Error(`Failed to add direct URL: unexpected response format`);
         }
         return data.nzo_ids[0];
     }

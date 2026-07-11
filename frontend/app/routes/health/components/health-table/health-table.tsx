@@ -33,7 +33,7 @@ export function HealthTable({ isEnabled, healthCheckItems }: HealthTableProps) {
                     <div className={styles.emptyIcon}>🩺💙💪</div>
                     <div className={styles.emptyTitle}>No Items To Health-Check</div>
                     <div className={styles.emptyDescription}>
-                        Once you begin processing nzbs, the mounted usenet files will be queued for continuous health monitoring
+                        Once you add mounted media, the files will be queued for continuous health monitoring
                     </div>
                 </div>
             ) : (

@@ -15,22 +15,22 @@ export type QueueTableProps = {
     queueSlots: PresentationQueueSlot[],
     totalQueueCount: number,
     categories: string[],
-    manualCategoryRef: React.RefObject<string>,
+    manualCategory: string,
+    onManualCategoryChanged: (value: string) => void,
     onIsSelectedChanged: (nzo_ids: Set<string>, isSelected: boolean) => void,
     onIsRemovingChanged: (nzo_ids: Set<string>, isRemoving: boolean) => void,
     onRemoved: (nzo_ids: Set<string>) => void,
-    onUploadClicked?: () => void;
 }
 
 export function QueueTable({
     queueSlots,
     totalQueueCount,
     categories,
-    manualCategoryRef,
+    manualCategory,
+    onManualCategoryChanged,
     onIsSelectedChanged,
     onIsRemovingChanged,
     onRemoved,
-    onUploadClicked,
 }: QueueTableProps) {
     const [isConfirmingRemoval, setIsConfirmingRemoval] = useState(false);
     var selectedCount = queueSlots.filter(x => !!x.isSelected).length;
@@ -94,16 +94,14 @@ export function QueueTable({
 
     // view
     const categoryDropdown = useMemo(() => (
-        <div title="Choose the category for manual nzb uploads.">
-            <SimpleDropdown options={categories} valueRef={manualCategoryRef} />
+        <div title="Choose the category for direct URL submissions.">
+            <SimpleDropdown options={categories} value={manualCategory} onChange={onManualCategoryChanged} />
         </div>
-    ), [categories]);
+    ), [categories, manualCategory, onManualCategoryChanged]);
 
     const sectionTitle = (
         <div className={styles.sectionTitle}>
-            <h3 onClick={onUploadClicked} style={{ cursor: 'pointer' }}>
-                Queue
-            </h3>
+            <h3>Queue</h3>
             {headerCheckboxState !== 'none' &&
                 <ActionButton type="delete" onClick={onRemove} />
             }
@@ -122,9 +120,9 @@ export function QueueTable({
     );
 
     return (
-        <PageSection title={sectionTitle} subTitle={sectionSubTitle}>
+        <PageSection title={sectionTitle} subTitle={sectionSubTitle} badgeText={`${totalQueueCount} total`}>
             {queueSlots?.length == 0 ? (
-                <EmptyQueue onUploadClicked={onUploadClicked} />
+                <EmptyQueue />
             ) : (
                 <PageTable headerCheckboxState={headerCheckboxState} onHeaderCheckboxChange={onSelectAll}>
                     {queueSlots.map(slot =>
